@@ -28,6 +28,7 @@ class RequestListView(SquestListView):
     ordering = '-date_submitted'
 
     filterset_class = RequestFilter
+    export_csv = True
 
     def get_queryset(self):
         return Request.get_queryset_for_user(self.request.user, 'service_catalog.view_request')

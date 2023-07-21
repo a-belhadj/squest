@@ -1,4 +1,5 @@
 import traceback
+from time import strftime
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.contenttypes.models import ContentType
@@ -11,6 +12,7 @@ from django.views.generic import CreateView, UpdateView, DeleteView, DetailView,
 from django.views.generic.detail import SingleObjectMixin
 from django_filters.views import FilterView
 from django_tables2 import SingleTableMixin
+from django_tables2.export import ExportMixin
 
 from Squest.utils.squest_rbac import SquestPermissionRequiredMixin
 
@@ -36,12 +38,20 @@ class SquestView(View):
         except AttributeError:
             try:
                 return reverse(f'{self.django_content_type.app_label}:{self.django_content_type.model}_{action}',
-                                    kwargs=self.get_generic_url_kwargs())
+                               kwargs=self.get_generic_url_kwargs())
             except NoReverseMatch:
                 return '#'
 
 
-class SquestListView(LoginRequiredMixin, SquestPermissionRequiredMixin, SingleTableMixin, SquestView, FilterView):
+class SquestExportMixin(ExportMixin):
+    export_formats = ("csv",)
+    export_csv = False
+    def get_export_filename(self, export_format):
+        return f'{self.django_content_type.model}{strftime("%Y-%m-%d-%Hh%M")}.{export_format}'
+
+
+class SquestListView(LoginRequiredMixin, SquestPermissionRequiredMixin, SquestExportMixin, SingleTableMixin, SquestView,
+                     FilterView):
     table_pagination = {'per_page': 10}
     template_name = 'generics/list.html'
 
@@ -54,6 +64,7 @@ class SquestListView(LoginRequiredMixin, SquestPermissionRequiredMixin, SingleTa
         context['html_button_path'] = "generics/buttons/add_button.html"
         context['add_url'] = self.get_generic_url("create")
         context['django_content_type'] = self.django_content_type
+        context['export_csv'] = self.export_csv
         return context
 
     def get_queryset(self):

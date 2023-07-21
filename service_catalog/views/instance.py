@@ -28,6 +28,8 @@ class InstanceListView(SquestListView):
     table_class = InstanceTable
     model = Instance
     filterset_class = InstanceFilter
+    export_csv = True
+
 
     def get_queryset(self):
         return Instance.get_queryset_for_user(self.request.user, "service_catalog.view_instance")
