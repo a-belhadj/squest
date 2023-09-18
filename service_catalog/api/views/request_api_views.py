@@ -8,9 +8,11 @@ from rest_framework.response import Response
 from Squest.utils.squest_api_views import SquestListAPIView, SquestRetrieveUpdateDestroyAPIView, SquestCreateAPIView, \
     SquestObjectPermissions
 from service_catalog.api.serializers import RequestSerializer, AdminRequestSerializer, OperationRequestSerializer, \
-    ServiceRequestSerializer
+    ServiceRequestSerializer, SurveySerializer, AdminSurveySerializer
 from service_catalog.filters.request_filter import RequestFilter
 from service_catalog.models import Request, OperationType, Operation, Instance
+from service_catalog.models.request import AdminSurvey, Survey
+from service_catalog.models.request_state import RequestState
 
 
 class RequestList(SquestListAPIView):
@@ -26,6 +28,14 @@ class RequestList(SquestListAPIView):
             return RequestSerializer
 
 
+class AdminSurveyDetails(SquestRetrieveUpdateDestroyAPIView):
+    queryset = AdminSurvey.objects.all()
+    def get_serializer_class(self):
+        return AdminSurveySerializer
+class SurveyDetails(SquestRetrieveUpdateDestroyAPIView):
+    queryset = Survey.objects.all()
+    def get_serializer_class(self):
+        return SurveySerializer
 class RequestDetails(SquestRetrieveUpdateDestroyAPIView):
     queryset = Request.objects.all()
 

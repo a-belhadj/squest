@@ -17,7 +17,6 @@ urlpatterns = [
     # Request
     path('request/', RequestList.as_view(), name='api_request_list'),
     path('request/<int:pk>/', RequestDetails.as_view(), name='api_request_details'),
-    # Request state machine
     path('request/<int:pk>/accept/', RequestStateMachine.as_view({'post': 'accept', 'get': 'get_survey'}),
          name='api_request_accept'),
     path('request/<int:pk>/archive/', RequestStateMachine.as_view({'post': 'archive'}),

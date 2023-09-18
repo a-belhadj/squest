@@ -26,6 +26,25 @@ from service_catalog.models.hooks import HookManager
 logger = logging.getLogger(__name__)
 
 
+class AbstractSurvey(SquestModel):
+    data = JSONField(default=dict, blank=True)
+
+    @classmethod
+    def get_default(cls):
+        return cls.objects.create(data=dict())
+
+    def __str__(self):
+        return f"Survey(Request #{self.request.id})"
+
+
+class AdminSurvey(AbstractSurvey):
+    def __str__(self):
+        return f"Admin{super(AbstractSurvey,self).__str__()}"
+
+
+class Survey(AbstractSurvey):
+    pass
+
 class Request(SquestModel):
     class Meta:
         ordering = ["-last_updated"]
@@ -42,8 +61,16 @@ class Request(SquestModel):
         ]
         default_permissions = ('add', 'change', 'delete', 'view', 'list')
 
-    fill_in_survey = JSONField(default=dict, blank=True)
-    admin_fill_in_survey = JSONField(default=dict, blank=True)
+    fill_in_survey = OneToOneField(
+        'Survey',
+        on_delete=CASCADE,
+        default=Survey.get_default,
+    )
+    admin_fill_in_survey = OneToOneField(
+        'AdminSurvey',
+        on_delete=CASCADE,
+        default=AdminSurvey.get_default
+    )
     instance = ForeignKey(Instance, on_delete=CASCADE, null=True)
     operation = ForeignKey(Operation, on_delete=CASCADE)
     user = ForeignKey(User, blank=True, null=True, on_delete=PROTECT)

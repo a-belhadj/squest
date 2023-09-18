@@ -1,7 +1,6 @@
 from json import dumps, loads
 
-from rest_framework.exceptions import ValidationError
-from rest_framework.relations import PrimaryKeyRelatedField
+from rest_framework.relations import PrimaryKeyRelatedField, HyperlinkedIdentityField
 from rest_framework.serializers import ModelSerializer, CharField
 
 from Squest.utils.squest_encoder import SquestEncoder
@@ -10,7 +9,7 @@ from profiles.models import Scope
 from service_catalog.api.serializers import DynamicSurveySerializer, InstanceReadSerializer
 from service_catalog.models.instance import Instance
 from service_catalog.models.message import RequestMessage
-from service_catalog.models.request import Request
+from service_catalog.models.request import Request, AdminSurvey, Survey
 
 
 class ServiceRequestSerializer(ModelSerializer):
@@ -127,6 +126,16 @@ class RequestSerializer(ModelSerializer):
     instance = InstanceReadSerializer(read_only=True)
     user = UserSerializer(read_only=True)
 
+class AdminSurveySerializer(ModelSerializer):
+    url = HyperlinkedIdentityField(view_name='api_adminsurvey_details')
+    class Meta:
+        model = AdminSurvey
+        fields = '__all__'
+class SurveySerializer(ModelSerializer):
+    url = HyperlinkedIdentityField(view_name='api_survey_details')
+    class Meta:
+        model = Survey
+        fields = '__all__'
 
 class AdminRequestSerializer(ModelSerializer):
     class Meta:
@@ -135,3 +144,5 @@ class AdminRequestSerializer(ModelSerializer):
 
     instance = InstanceReadSerializer(read_only=True)
     user = UserSerializer(read_only=True)
+    admin_fill_in_survey = AdminSurveySerializer(read_only=True)
+    fill_in_survey = SurveySerializer(read_only=True)

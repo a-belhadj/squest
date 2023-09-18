@@ -79,7 +79,6 @@ class Command(BaseCommand):
                                                                    operation=service.operations.filter(
                                                                        type=OperationType.CREATE)[0],
                                                                    state=random.choice(states),
-                                                                   fill_in_survey=dict(),
                                                                    user=user)
 
         # ----------------------
