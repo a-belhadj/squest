@@ -1,10 +1,10 @@
-
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 
 from profiles.models import Permission, Role, Organization
 from service_catalog.models import Instance, InstanceState, Request, RequestState, ApprovalWorkflow, ApprovalStep
 from tests.test_service_catalog.base import BaseTestCommon
+
 
 class TestRequestsAwaitingApproval(BaseTestCommon):
 
@@ -93,7 +93,6 @@ class TestRequestsAwaitingApproval(BaseTestCommon):
                               [self.request_approvalwf_1.id, self.request_approvalwf_2.id])
 
     def test_classic_request(self):
-
         approver = Role.objects.create(name="approver")
         approver.permissions.add(Permission.objects.get_by_natural_key(codename="accept_request",app_label="service_catalog",model="request"))
         self.organization1.add_user_in_role(self.user1, approver)
@@ -123,3 +122,37 @@ class TestRequestsAwaitingApproval(BaseTestCommon):
                               [self.request_approvalwf_2.id])
         self.assertCountEqual(Request.get_requests_awaiting_approval(self.superuser).values_list('id', flat=True),
                               [self.request_approvalwf_1.id, self.request_approvalwf_2.id])
+
+    def test_classic_request_accepted(self):
+        approver = Role.objects.create(name="approver")
+        approver.permissions.add(Permission.objects.get_by_natural_key(codename="process_request", app_label="service_catalog", model="request"))
+        self.organization1.add_user_in_role(self.user1, approver)
+        self.organization2.add_user_in_role(self.user2, approver)
+
+        # No requests
+        self.assertCountEqual(Request.get_requests_awaiting_approval(self.user1).values_list('id', flat=True), [])
+        self.assertCountEqual(Request.get_requests_awaiting_approval(self.user2).values_list('id', flat=True), [])
+        self.assertCountEqual(Request.get_requests_awaiting_approval(self.superuser).values_list('id', flat=True), [])
+
+        self.request_1 = Request.objects.create(instance=self.instance1,
+                                                state=RequestState.ACCEPTED,
+                                                operation=self.create_operation_test)
+
+        # Only user 1 see request 1 (request1 belong to instance1 in org1 and only user1 have the process permission)
+        self.assertCountEqual(Request.get_requests_awaiting_approval(self.user1).values_list('id', flat=True),
+                              [self.request_1.id])
+        self.assertCountEqual(Request.get_requests_awaiting_approval(self.user2).values_list('id', flat=True), [])
+        self.assertCountEqual(Request.get_requests_awaiting_approval(self.superuser).values_list('id', flat=True),
+                              [self.request_1.id])
+
+        self.request_2 = Request.objects.create(instance=self.instance2,
+                                                state=RequestState.ACCEPTED,
+                                                operation=self.create_operation_test)
+
+        # Only user 2 see request 2 (request2 belong to instance2 in org2 and only user2 have the process permission)
+        self.assertCountEqual(Request.get_requests_awaiting_approval(self.user1).values_list('id', flat=True),
+                              [self.request_1.id])
+        self.assertCountEqual(Request.get_requests_awaiting_approval(self.user2).values_list('id', flat=True),
+                              [self.request_2.id])
+        self.assertCountEqual(Request.get_requests_awaiting_approval(self.superuser).values_list('id', flat=True),
+                              [self.request_1.id, self.request_2.id])

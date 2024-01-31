@@ -12,7 +12,8 @@
 - List related docs in OperationDetails and ServiceDetails view
 - Add PROCESSING requests in the dashboard of the main page
 - Display only docs that are not linked to services or operations in ListDoc
-
+- Add ACCEPTED requests in the table "To be reviewed"
+ 
 ## Feature
 
 - ApprovalWorkflow preview.

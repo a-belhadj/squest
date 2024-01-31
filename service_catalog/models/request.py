@@ -422,6 +422,9 @@ class Request(SquestModel):
         all_requests = all_requests | Request.objects.filter(
             approval_workflow_state__current_step__in=all_approval_step).distinct()
 
+        all_requests = all_requests | Request.get_queryset_for_user(user, 'service_catalog.process_request').filter(
+            state=RequestState.ACCEPTED).distinct()
+
         return all_requests
 
     @classmethod
